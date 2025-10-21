@@ -1,1 +1,9 @@
-STA313 Assignment 2
+---
+title: "Diabetes Deaths in North America vs Europe: Patterns, Disparities, and Insights"
+author: "Justin Ng (#1009317044), Taejun Um"
+date: "October 23, 2025"
+output:
+  pdf_document: default
+  html_document: default
+---
+```{r}
