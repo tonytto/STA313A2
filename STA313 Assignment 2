@@ -6,4 +6,41 @@ output:
   pdf_document: default
   html_document: default
 ---
+```{r, echo=FALSE}
+death <- read_csv("hcd_death.csv")
+head(death)
+```
+
 ```{r}
+diabetes <- death %>%
+  filter(cause == "I025")
+```
+
+```{r}
+diabetes <- diabetes %>%
+  mutate(region = case_when(
+    country %in% c("United States", "Canada") ~ "North America",
+    country %in% c("Austria", "Belgium", "France", "Germany", "Italy",
+                   "Netherlands", "Norway", "Spain", "Sweden", "United Kingdom") ~ "Europe",
+    TRUE ~ "Other"
+  ))
+```
+
+```{r}
+trend_data <- diabetes %>%
+  filter(region %in% c("North America", "Europe")) %>%
+  group_by(region, year) %>%
+  summarize(mean_rate = mean(death, na.rm = TRUE))
+```
+
+```{r}
+ggplot(trend_data, aes(x = year, y = mean_rate, color = region)) +
+  geom_line(size = 1.2) +
+  labs(title = "Diabetes Mortality Trends (1990–2020)",
+       subtitle = "Comparing North America and Europe",
+       x = "Year",
+       y = "Average Death Rate per Million",
+       color = "Region") +
+  theme_minimal() +
+  theme(plot.title = element_text(size = 14))
+```
