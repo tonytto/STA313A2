@@ -36,6 +36,12 @@ trend_data <- diabetes %>%
 ```{r}
 ggplot(trend_data, aes(x = year, y = mean_rate, color = region)) +
   geom_line(size = 1.2) +
+  annotate("text", x = 1992, y = 1900, label = "Policy improvements\n& better diabetes care", 
+           color = "red", hjust = 0, size = 3.5, fontface = "italic") +
+  geom_vline(xintercept = 2005, linetype = "dashed", color = "red", alpha = 0.6) +
+  annotate("text", x = 2010.5, y = 5000, label = "Drop after\nEU health initiatives", 
+           color = "blue", hjust = 0, size = 3.5, fontface = "italic") +
+  geom_vline(xintercept = 2010, linetype = "dashed", color = "blue", alpha = 0.6) +
   labs(title = "Diabetes Mortality Trends (1990–2020)",
        subtitle = "Comparing North America and Europe",
        x = "Year",
