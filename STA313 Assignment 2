@@ -1,27 +1,35 @@
 ---
 title: "Diabetes Deaths in North America vs Europe: Patterns, Disparities, and Insights"
-author: "Justin Ng (#1009317044), Taejun Um"
+author: "Justin Ng, Taejun Um"
 date: "October 23, 2025"
 output:
   pdf_document: default
   html_document: default
 ---
+---
+title: "Diabetes Deaths in North America vs Europe: Patterns, Disparities, and Insights"
+author: "Justin Ng (#1009317044)"
+date: "September 23, 2025"
+output:
+  pdf_document: default
+  html_document: default
+---
+#Chart 1
 ```{r, echo=FALSE}
-death <- read_csv("hcd_death.csv")
+death <- read_csv("hcd_sdr.csv")
 head(death)
 ```
 
 ```{r}
 diabetes <- death %>%
-  filter(cause == "I025")
+  filter(cause == "I025",, year %in% c(2001, 2020))
 ```
 
 ```{r}
 diabetes <- diabetes %>%
   mutate(region = case_when(
     country %in% c("United States", "Canada") ~ "North America",
-    country %in% c("Austria", "Belgium", "France", "Germany", "Italy",
-                   "Netherlands", "Norway", "Spain", "Sweden", "United Kingdom") ~ "Europe",
+    country %in% c("France", "Germany", "Spain", "England and Wales") ~ "Europe",
     TRUE ~ "Other"
   ))
 ```
@@ -30,17 +38,17 @@ diabetes <- diabetes %>%
 trend_data <- diabetes %>%
   filter(region %in% c("North America", "Europe")) %>%
   group_by(region, year) %>%
-  summarize(mean_rate = mean(death, na.rm = TRUE))
+  summarize(sdr_per_million = mean(sdr_per_million, na.rm = TRUE))
 ```
 
 ```{r}
-ggplot(trend_data, aes(x = year, y = mean_rate, color = region)) +
+ggplot(trend_data, aes(x = year, y = sdr_per_million, color = region)) +
   geom_line(size = 1.2) +
-  annotate("text", x = 1992, y = 1900, label = "Policy improvements\n& better diabetes care", 
-           color = "red", hjust = 0, size = 3.5, fontface = "italic") +
+  annotate("text", x = 1992, y = 250, label = "Policy improvements\n& better diabetes care", 
+           color = "red", hjust = 0, size = 3.5) +
   geom_vline(xintercept = 2005, linetype = "dashed", color = "red", alpha = 0.6) +
-  annotate("text", x = 2010.5, y = 5000, label = "Drop after\nEU health initiatives", 
-           color = "blue", hjust = 0, size = 3.5, fontface = "italic") +
+  annotate("text", x = 2010.5, y = 400, label = "Drop after\nEU health initiatives", 
+           color = "blue", hjust = 0, size = 3.5) +
   geom_vline(xintercept = 2010, linetype = "dashed", color = "blue", alpha = 0.6) +
   labs(title = "Diabetes Mortality Trends (1990–2020)",
        subtitle = "Comparing North America and Europe",
@@ -50,3 +58,42 @@ ggplot(trend_data, aes(x = year, y = mean_rate, color = region)) +
   theme_minimal() +
   theme(plot.title = element_text(size = 14))
 ```
+
+```{r}
+diabetes_filtered <- death %>%
+  filter(cause == "I025", year %in% c(1998, 2020)) %>%
+  mutate(region = case_when(
+    country %in% c("United States", "Canada") ~ "North America",
+    country %in% c("France", "Germany", "Spain", "United Kingdom") ~ "Europe",
+    TRUE ~ "Other"
+  )) %>%
+  filter(region %in% c("Europe", "North America")) %>%
+  group_by(country, region, year) %>%
+  summarise(total_deaths = sum(death, na.rm = TRUE), .groups = "drop")
+
+#Chart 2
+ggplot(diabetes_filtered, 
+       aes(x = factor(year), y = total_deaths, group = country, color = region)) +
+  geom_line(size = 1.2, alpha = 0.8) +
+  geom_point(size = 3) +
+  geom_text(data = diabetes_filtered %>% filter(year == 1998),
+            aes(label = country), hjust = 1.1, size = 3) +
+  geom_text(data = diabetes_filtered %>% filter(year == 2020),
+            aes(label = country), hjust = -0.1, size = 3) +
+  facet_wrap(~region, scales = "free_y") +
+  labs(
+    title = "Change in Diabetes-Related Deaths (1990 → 2021)",
+    subtitle = "Europe shows a clear decline, while North America remains stable",
+    x = "",
+    y = "Total Deaths",
+    color = "Region",
+    caption = "Data source: Human Mortality Database (I025 – Diabetes mellitus E10–E14)"
+  ) +
+  theme_minimal(base_size = 12) +
+  theme(
+    panel.grid = element_blank(),
+    legend.position = "none",
+    plot.title = element_text(face = "bold")
+  )
+```
+  
